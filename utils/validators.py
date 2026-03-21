@@ -1,5 +1,6 @@
 import re
 def validate_inputs(ip, username, password, hostname, vlan_entries_data):
+
         ip = ip.strip()
         username = username.strip()
         password = password.strip()
@@ -52,3 +53,14 @@ def validate_inputs(ip, username, password, hostname, vlan_entries_data):
         return True, {   "hostname": hostname,
             "vlans": vlan_list
         }
+
+def validate_connection_inputs(ip, username, password):
+
+    if not ip:
+        return False, "Switch IP is required"
+    if not username:
+        return False, "Username is required"
+    if not password:
+        return False, "Password is required"
+
+    return True, {"ip": ip, "username": username, "password": password}

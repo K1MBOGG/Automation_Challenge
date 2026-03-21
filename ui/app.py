@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
-from utils.validators import validate_inputs
+from utils.validators import validate_inputs,validate_connection_inputs
 from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
+from services.switch_service import fetch_switch_state
 
 class AutomationApp:
     def __init__(self):
@@ -62,8 +63,8 @@ class AutomationApp:
 
         ttk.Button(button_frame, text="Preview", command=self.preview_config).pack(side="left", padx=5)
         ttk.Button(button_frame, text="Apply", command=self.apply_config).pack(side="left", padx=5)
-        #ttk.Button(button_frame, text="Clear", command=self.clear_fields).pack(side="left", padx=5)
-        #tk.Button(button_frame, text="Read Config", command=self.read_switch_state).pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Clear", command=self.clear_fields).pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Read Config", command=self.read_switch_state).pack(side="left", padx=5)
 
         # Output Frame
         output_frame = ttk.LabelFrame(self.root, text="Output")
@@ -429,6 +430,100 @@ class AutomationApp:
             preview_lines.append("No configuration changes required")
 
         self.output_text.insert(tk.END, "\n".join(preview_lines))
+    def read_switch_state(self):
+            self.output_text.delete("1.0", tk.END)
+            ip = self.ip_entry.get()
+            username = self.username_entry.get()
+            password = self.password_entry.get()
+            valid, result = validate_connection_inputs(ip, username, password)
+            if not valid:
+                self.output_text.insert(tk.END, f"Error: {result}")
+                return
+
+            try:
+                self.output_text.insert(tk.END, "Connecting to switch...\n")
+                self.root.update()
+                
+                hostname_output, vlan_output = fetch_switch_state(ip, username, password)
+
+                self.output_text.insert(tk.END, "Connection successful.\n")
+                self.root.update()
+
+                self.current_hostname = self.parse_hostname(hostname_output)
+                self.current_vlans = self.parse_vlan_brief(vlan_output)
+
+                lines = [
+                    "=== Switch Current Config ===",
+                    "",
+                    f"[Hostname] {self.current_hostname if self.current_hostname else 'Not found'}",
+                    "",
+                    "[VLANs]"
+                ]
+
+                if self.current_vlans:
+                    for vlan_id, vlan_name in sorted(self.current_vlans.items()):
+                        lines.append(f"- VLAN {vlan_id}: {vlan_name}")
+                else:
+                    lines.append("No VLANs parsed")
+
+                self.output_text.delete("1.0", tk.END)
+                self.output_text.insert(tk.END, "\n".join(lines))
+
+            except NetmikoAuthenticationException:
+                self.output_text.delete("1.0", tk.END)
+                self.output_text.insert(tk.END, "Authentication failed. Please verify username/password.")
+            except NetmikoTimeoutException:
+                self.output_text.delete("1.0", tk.END)
+                self.output_text.insert(tk.END, "Connection timed out. Device unreachable or SSH not available.")
+            except Exception as e:
+                self.output_text.delete("1.0", tk.END)
+                self.output_text.insert(tk.END, f"Unexpected error: {str(e)}")
+    def clear_fields(self):
+        self.ip_entry.delete(0, tk.END)
+        self.username_entry.delete(0, tk.END)
+        self.password_entry.delete(0, tk.END)
+        self.hostname_entry.delete(0, tk.END)
+
+        for vlan_id_entry, vlan_name_entry in self.vlan_entries:
+            vlan_id_entry.delete(0, tk.END)
+            vlan_name_entry.delete(0, tk.END)
+
+        self.output_text.delete("1.0", tk.END)
+    def parse_hostname(self, hostname_output):
+        for line in hostname_output.splitlines():
+            line = line.strip()
+            if line.startswith("hostname "):
+                return line.split("hostname ", 1)[1].strip()
+        return None
+    def parse_vlan_brief(self, vlan_output):
+        vlans = {}
+
+        for line in vlan_output.splitlines():
+            line = line.strip()
+
+            if not line:
+                continue
+
+            # Saltar cabeceras
+            if line.startswith("VLAN Name") or line.startswith("----"):
+                continue
+
+            parts = line.split()
+
+            # Esperamos al menos:
+            # VLAN_ID  VLAN_NAME  STATUS ...
+            if len(parts) < 3:
+                continue
+
+            vlan_id = parts[0]
+
+            if not vlan_id.isdigit():
+                continue
+
+            vlan_name = parts[1]
+            vlans[int(vlan_id)] = vlan_name
+
+        return vlans
 
     def run(self):
         self.root.mainloop()

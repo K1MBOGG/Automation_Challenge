@@ -2,7 +2,15 @@ import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
 from utils.validators import validate_inputs,validate_connection_inputs
 from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
-from services.switch_service import fetch_switch_state
+from services.switch_service import fetch_switch_state,connect_to_switch
+from services.config_service import (
+    parse_hostname,
+    parse_vlan_brief,
+    get_vlan_conflicts,
+    build_config_commands,
+    validate_post_change,
+    extract_relevant_changes,
+)
 
 class AutomationApp:
     def __init__(self):
@@ -107,7 +115,7 @@ class AutomationApp:
             self.output_text.insert(tk.END, "Connecting to switch...\n")
             self.root.update()
 
-            connection = self.connect_to_switch()
+            connection = connect_to_switch(ip,username,password)
 
             # Pre-change read
             self.output_text.insert(tk.END, "\nReading current config...\n")
@@ -117,9 +125,9 @@ class AutomationApp:
             vlan_output = connection.send_command("show vlan brief")
             running_config_output = connection.send_command("show running-config")
 
-            self.current_hostname = self.parse_hostname(hostname_output)
-            self.current_vlans = self.parse_vlan_brief(vlan_output)
-            conflicts = self.get_vlan_conflicts(desired_vlans)
+            self.current_hostname = parse_hostname(hostname_output)
+            self.current_vlans = parse_vlan_brief(vlan_output)
+            conflicts = get_vlan_conflicts(self.current_vlans,desired_vlans)
 
             if conflicts:
                 conflict_message = "The following VLAN conflicts were detected:\n\n"
@@ -135,16 +143,18 @@ class AutomationApp:
 
                 force_conflicts = True
             # Save pre-change backup
-            pre_hostname_label = self.current_hostname if self.current_hostname else "unknown_switch"
+            ''' pre_hostname_label = self.current_hostname if self.current_hostname else "unknown_switch"
             pre_run_file = self.save_backup("backups/prechange", pre_hostname_label, "running-config", running_config_output)
             pre_vlan_file = self.save_backup("backups/prechange", pre_hostname_label, "show-vlan", vlan_output)
 
             #self.output_text.insert(tk.END, f"Pre-change backup saved:\n- {pre_run_file}\n- {pre_vlan_file}\n")
             self.output_text.insert(tk.END, f"\nPre-change backup completed.\n")
             self.root.update()
-
+            ''' 
             # Build commands
-            commands, detected_conflicts = self.build_config_commands(
+            commands, detected_conflicts = build_config_commands(
+                                                                    self.current_hostname,
+                                                                    self.current_vlans,
                                                                     desired_hostname,
                                                                     desired_vlans,
                                                                     force_conflicts=force_conflicts
@@ -197,8 +207,8 @@ class AutomationApp:
 
             # Save post-change backup
             post_hostname_label = self.current_hostname if self.current_hostname else desired_hostname
-            post_run_file = self.save_backup("backups/postchange", post_hostname_label, "running-config", post_running_config_output)
-            post_vlan_file = self.save_backup("backups/postchange", post_hostname_label, "show-vlan", post_vlan_output)
+            #post_run_file = self.save_backup("backups/postchange", post_hostname_label, "running-config", post_running_config_output)
+            #post_vlan_file = self.save_backup("backups/postchange", post_hostname_label, "show-vlan", post_vlan_output)
             self.output_text.insert(tk.END, "Post-change backup completed.\n\n")
             self.output_text.insert(tk.END, "Execution completed.\n\n")
             ## diff
@@ -218,7 +228,7 @@ class AutomationApp:
             
             
 
-            relevant_changes = self.extract_relevant_changes(running_diff)
+            relevant_changes = extract_relevant_changes(running_diff)
             diff_run_file = self.save_text_file(
                 "backups/diff",
                 post_hostname_label,
@@ -236,7 +246,12 @@ class AutomationApp:
             )
 
             # Validation
-            validation_results = self.validate_post_change(desired_hostname, desired_vlans)
+            validation_results = validate_post_change(
+                                                        self.current_hostname,
+                                                        self.current_vlans,
+                                                        desired_hostname,
+                                                        desired_vlans
+                                                    )
             summary_lines = []
             summary_lines.append("\n=== Execution Summary ===\n")
 

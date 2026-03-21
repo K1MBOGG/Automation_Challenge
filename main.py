@@ -1,6 +1,6 @@
-def main():
-    print("Automation Challenge")
+from ui.app import AutomationApp
 
 
 if __name__ == "__main__":
-    main()
+    app = AutomationApp()
+    app.run()

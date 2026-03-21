@@ -342,7 +342,11 @@ class AutomationApp:
             self.root.update()
 
             try:
-                self.fetch_switch_state()
+                hostname_output, vlan_output = fetch_switch_state(ip, username, password)
+
+                self.current_hostname = self.parse_hostname(hostname_output)
+                self.current_vlans = self.parse_vlan_brief(vlan_output)
+
                 self.output_text.insert(tk.END, "Switch config loaded.\n\n")
                 self.root.update()
             except NetmikoAuthenticationException:
@@ -524,6 +528,54 @@ class AutomationApp:
             vlans[int(vlan_id)] = vlan_name
 
         return vlans
+    def get_desired_vlans(self):
+        vlan_list = []
 
+        for vlan_id_entry, vlan_name_entry in self.vlan_entries:
+            vlan_id = vlan_id_entry.get().strip()
+            vlan_name = vlan_name_entry.get().strip()
+
+            if vlan_id and vlan_name:
+                vlan_list.append((int(vlan_id), vlan_name))
+
+        return vlan_list
+    def get_vlan_conflicts(self, desired_vlans):
+        conflicts = []
+
+        for vlan_id, desired_name in desired_vlans:
+            if vlan_id in self.current_vlans:
+                current_name = self.current_vlans[vlan_id]
+                if current_name != desired_name:
+                    conflicts.append(
+                        f"VLAN {vlan_id}: current='{current_name}', desired='{desired_name}'"
+                    )
+
+        return conflicts
+    def build_config_commands(self, desired_hostname, desired_vlans, force_conflicts=False):
+        commands = []
+        detected_conflicts = []
+
+        if desired_hostname and self.current_hostname != desired_hostname:
+            commands.append(f"hostname {desired_hostname}")
+
+        for vlan_id, desired_name in desired_vlans:
+            if vlan_id not in self.current_vlans:
+                commands.append(f"vlan {vlan_id}")
+                commands.append(f" name {desired_name}")
+            else:
+                current_name = self.current_vlans[vlan_id]
+
+                if current_name == desired_name:
+                    continue
+
+                detected_conflicts.append(
+                    f"VLAN {vlan_id} exists as '{current_name}', desired '{desired_name}'"
+                )
+
+                if force_conflicts:
+                    commands.append(f"vlan {vlan_id}")
+                    commands.append(f" name {desired_name}")
+
+        return commands, detected_conflicts
     def run(self):
         self.root.mainloop()

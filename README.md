@@ -234,12 +234,12 @@ python main.py
 
 ---
 
-### 7. Validación post cambio - OK
+### 7. Lectura de configuracion post cambio
 <img src="screenshots/read_config_post_apply.png" width="700">
 
 ---
 
-### 7. Validacion post cambio - FAILED
+### 8. Validacion post cambio - FAILED
 
 #### Parte 1
 <img src="screenshots/apply_config_validation_failed_1.png" width="700">

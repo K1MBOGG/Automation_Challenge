@@ -88,7 +88,7 @@ def validate_post_change(current_hostname, current_vlans, desired_hostname, desi
         else:
             results.append("✔ Configuration successfully validated. Device is compliant.")
 
-        return results
+        return results,has_error,has_warning
 
 def extract_relevant_changes(diff_text):
     relevant_lines = []

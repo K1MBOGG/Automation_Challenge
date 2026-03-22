@@ -248,7 +248,8 @@ class AutomationApp:
             )
 
             # Validation
-            validation_results = validate_post_change(
+            
+            validation_results,has_error,has_warning = validate_post_change(
                                                         self.current_hostname,
                                                         self.current_vlans,
                                                         desired_hostname,
@@ -283,13 +284,18 @@ class AutomationApp:
                         summary_lines.append(f"  ✔ {item} (user approved)")
                     else:
                         summary_lines.append(f"  - {item}")
-            else:
-                summary_lines.append("\nConflicts: none")
+            #else:
+            #    summary_lines.append("\nConflicts: none")
 
             summary_lines.append("\n=== Validation Results ===\n")
             for item in validation_results:
                 summary_lines.append(f"  {item}")
+            if has_error or has_warning:
+                summary_lines.append("\n=== Device Response ===\n")
+                summary_lines.append(config_result)
 
+                logger.warning("Post-change validation detected warnings/errors.")
+                logger.warning(f"Device response after apply:\n{config_result}")
             #self.output_text.insert(tk.END, "\n=== Relevant Changes (Hostname & VLANs) ===\n")
 
             summary_lines.append("\n=== Relevant Changes (Hostname & VLANs) ===\n")

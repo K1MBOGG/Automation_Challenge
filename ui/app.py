@@ -12,6 +12,9 @@ from services.config_service import (
     extract_relevant_changes,
 )
 from services.file_service import save_backup, save_text_file, generate_diff
+from utils.logger import setup_logger
+
+logger = setup_logger()
 
 class AutomationApp:
     def __init__(self):
@@ -104,6 +107,7 @@ class AutomationApp:
         force_conflicts = False
 
         try:
+            logger.info(f"Apply started for {ip}")
             self.output_text.insert(tk.END, "Connecting to switch...\n")
             self.root.update()
 
@@ -124,6 +128,7 @@ class AutomationApp:
             if conflicts:
                 conflict_message = "The following VLAN conflicts were detected:\n\n"
                 conflict_message += "\n".join(conflicts)
+                logger.warning(f"VLAN conflicts detected: {conflicts}")
                 conflict_message += "\n\nDo you want to continue and apply these conflicting VLAN renames?"
 
                 continue_apply = messagebox.askyesno("VLAN Conflicts Detected", conflict_message)
@@ -141,6 +146,7 @@ class AutomationApp:
 
             #self.output_text.insert(tk.END, f"Pre-change backup saved:\n- {pre_run_file}\n- {pre_vlan_file}\n")
             self.output_text.insert(tk.END, f"\nPre-change backup completed.\n")
+            logger.info(f"Pre-change backup completed.")
             self.root.update()
             
             # Build commands
@@ -163,7 +169,7 @@ class AutomationApp:
                     connection.disconnect()
                     return
 
-            
+            logger.info(f"Commands to apply: {commands}")
             self.output_text.insert(tk.END, "\nPlanned configuration:\n\n")
             for cmd in commands:
                 self.output_text.insert(tk.END, f"  {cmd}\n")
@@ -180,7 +186,7 @@ class AutomationApp:
             self.output_text.insert(tk.END, "\nSaving configuration...\n")
             self.root.update()
             connection.save_config()
-
+            logger.info("Configuration applied successfully")
             #self.output_text.insert(tk.END, f"{save_result}\n")
             self.root.update()
 
@@ -202,7 +208,10 @@ class AutomationApp:
             post_run_file = save_backup("backups/postchange", post_hostname_label, "running-config", post_running_config_output)
             post_vlan_file = save_backup("backups/postchange", post_hostname_label, "show-vlan", post_vlan_output)
             self.output_text.insert(tk.END, "Post-change backup completed.\n\n")
+            logger.info(f"Pchange backup completed.")
             self.output_text.insert(tk.END, "Execution completed.\n\n")
+            logger.info("Post-change backup completed")
+            logger.info("Execution completed")
             ## diff
             running_diff = generate_diff(
                 running_config_output,
@@ -314,6 +323,7 @@ class AutomationApp:
         except Exception as e:
             self.output_text.delete("1.0", tk.END)
             self.output_text.insert(tk.END, f"Unexpected error: {str(e)}")
+            logger.error(f"Unexpected error: {str(e)}")
     def preview_config(self):
         self.output_text.delete("1.0", tk.END)
 
@@ -338,6 +348,7 @@ class AutomationApp:
         
         self.output_text.insert(tk.END, "Reading current config...\n\n")
         self.root.update()
+        logger.info(f"Reading current config...ip : {ip}")
         fetch_switch_state(ip,username,password)
 
         try:
@@ -356,6 +367,7 @@ class AutomationApp:
             return
         except Exception as e:
             self.output_text.insert(tk.END, f"Error: {str(e)}\n")
+            logger.error(f"Unexpected error: {str(e)}")
             return
 
         force_conflicts = False
@@ -365,7 +377,7 @@ class AutomationApp:
             conflict_message = "The following VLAN conflicts were detected:\n\n"
             conflict_message += "\n".join(conflicts)
             conflict_message += "\n\nDo you want to continue and include these conflicting VLAN renames in the preview?"
-
+            logger.warning(f"Config_Preview : VLAN conflicts detected: {conflicts}")
             continue_preview = messagebox.askyesno("VLAN Conflicts Detected", conflict_message)
 
             if not continue_preview:
@@ -482,6 +494,7 @@ class AutomationApp:
             except Exception as e:
                 self.output_text.delete("1.0", tk.END)
                 self.output_text.insert(tk.END, f"Unexpected error: {str(e)}")
+                logger.error(f"Unexpected error: {str(e)}")
     def clear_fields(self):
         self.ip_entry.delete(0, tk.END)
         self.username_entry.delete(0, tk.END)

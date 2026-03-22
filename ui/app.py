@@ -143,14 +143,14 @@ class AutomationApp:
 
                 force_conflicts = True
             # Save pre-change backup
-            ''' pre_hostname_label = self.current_hostname if self.current_hostname else "unknown_switch"
+            pre_hostname_label = self.current_hostname if self.current_hostname else "unknown_switch"
             pre_run_file = self.save_backup("backups/prechange", pre_hostname_label, "running-config", running_config_output)
             pre_vlan_file = self.save_backup("backups/prechange", pre_hostname_label, "show-vlan", vlan_output)
 
             #self.output_text.insert(tk.END, f"Pre-change backup saved:\n- {pre_run_file}\n- {pre_vlan_file}\n")
             self.output_text.insert(tk.END, f"\nPre-change backup completed.\n")
             self.root.update()
-            ''' 
+            
             # Build commands
             commands, detected_conflicts = build_config_commands(
                                                                     self.current_hostname,
@@ -202,13 +202,13 @@ class AutomationApp:
 
             connection.disconnect()
 
-            self.current_hostname = self.parse_hostname(post_hostname_output)
-            self.current_vlans = self.parse_vlan_brief(post_vlan_output)
+            self.current_hostname = parse_hostname(post_hostname_output)
+            self.current_vlans = parse_vlan_brief(post_vlan_output)
 
             # Save post-change backup
             post_hostname_label = self.current_hostname if self.current_hostname else desired_hostname
-            #post_run_file = self.save_backup("backups/postchange", post_hostname_label, "running-config", post_running_config_output)
-            #post_vlan_file = self.save_backup("backups/postchange", post_hostname_label, "show-vlan", post_vlan_output)
+            post_run_file = self.save_backup("backups/postchange", post_hostname_label, "running-config", post_running_config_output)
+            post_vlan_file = self.save_backup("backups/postchange", post_hostname_label, "show-vlan", post_vlan_output)
             self.output_text.insert(tk.END, "Post-change backup completed.\n\n")
             self.output_text.insert(tk.END, "Execution completed.\n\n")
             ## diff
@@ -359,8 +359,8 @@ class AutomationApp:
             try:
                 hostname_output, vlan_output = fetch_switch_state(ip, username, password)
 
-                self.current_hostname = self.parse_hostname(hostname_output)
-                self.current_vlans = self.parse_vlan_brief(vlan_output)
+                self.current_hostname = parse_hostname(hostname_output)
+                self.current_vlans = parse_vlan_brief(vlan_output)
 
                 self.output_text.insert(tk.END, "Switch config loaded.\n\n")
                 self.root.update()
@@ -468,8 +468,8 @@ class AutomationApp:
                 self.output_text.insert(tk.END, "Connection successful.\n")
                 self.root.update()
 
-                self.current_hostname = self.parse_hostname(hostname_output)
-                self.current_vlans = self.parse_vlan_brief(vlan_output)
+                self.current_hostname = parse_hostname(hostname_output)
+                self.current_vlans = parse_vlan_brief(vlan_output)
 
                 lines = [
                     "=== Switch Current Config ===",
@@ -508,41 +508,6 @@ class AutomationApp:
             vlan_name_entry.delete(0, tk.END)
 
         self.output_text.delete("1.0", tk.END)
-    def parse_hostname(self, hostname_output):
-        for line in hostname_output.splitlines():
-            line = line.strip()
-            if line.startswith("hostname "):
-                return line.split("hostname ", 1)[1].strip()
-        return None
-    def parse_vlan_brief(self, vlan_output):
-        vlans = {}
-
-        for line in vlan_output.splitlines():
-            line = line.strip()
-
-            if not line:
-                continue
-
-            # Saltar cabeceras
-            if line.startswith("VLAN Name") or line.startswith("----"):
-                continue
-
-            parts = line.split()
-
-            # Esperamos al menos:
-            # VLAN_ID  VLAN_NAME  STATUS ...
-            if len(parts) < 3:
-                continue
-
-            vlan_id = parts[0]
-
-            if not vlan_id.isdigit():
-                continue
-
-            vlan_name = parts[1]
-            vlans[int(vlan_id)] = vlan_name
-
-        return vlans
     def get_desired_vlans(self):
         vlan_list = []
 
@@ -554,43 +519,5 @@ class AutomationApp:
                 vlan_list.append((int(vlan_id), vlan_name))
 
         return vlan_list
-    def get_vlan_conflicts(self, desired_vlans):
-        conflicts = []
-
-        for vlan_id, desired_name in desired_vlans:
-            if vlan_id in self.current_vlans:
-                current_name = self.current_vlans[vlan_id]
-                if current_name != desired_name:
-                    conflicts.append(
-                        f"VLAN {vlan_id}: current='{current_name}', desired='{desired_name}'"
-                    )
-
-        return conflicts
-    def build_config_commands(self, desired_hostname, desired_vlans, force_conflicts=False):
-        commands = []
-        detected_conflicts = []
-
-        if desired_hostname and self.current_hostname != desired_hostname:
-            commands.append(f"hostname {desired_hostname}")
-
-        for vlan_id, desired_name in desired_vlans:
-            if vlan_id not in self.current_vlans:
-                commands.append(f"vlan {vlan_id}")
-                commands.append(f" name {desired_name}")
-            else:
-                current_name = self.current_vlans[vlan_id]
-
-                if current_name == desired_name:
-                    continue
-
-                detected_conflicts.append(
-                    f"VLAN {vlan_id} exists as '{current_name}', desired '{desired_name}'"
-                )
-
-                if force_conflicts:
-                    commands.append(f"vlan {vlan_id}")
-                    commands.append(f" name {desired_name}")
-
-        return commands, detected_conflicts
     def run(self):
         self.root.mainloop()

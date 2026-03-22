@@ -77,7 +77,7 @@ Obtiene el estado actual del dispositivo:
 
 ---
 
-## Manejo de conflictos
+### Preview - Manejo de conflictos
 
 Cuando una VLAN existe con un nombre distinto:
 
@@ -95,7 +95,7 @@ Cuando una VLAN existe con un nombre distinto:
 
 ---
 
-## Manejo de conflictos
+### Apply - Manejo de conflictos
 
 Cuando una VLAN existe con un nombre distinto:
 
@@ -124,12 +124,12 @@ Se generan automáticamente:
 - Diff de VLANs
 
 Ubicación:
-
+```text
 backups/
 ├── prechange/
 ├── postchange/
 └── diff/
-
+```
 
 ---
 
@@ -159,13 +159,15 @@ pip install -r requirements.txt
 
 ## Dependencias
 
+```bash
 netmiko
-
+```
 Nota: También se utilizan librerías estándar de Python (logging, difflib, os, datetime), que no requieren instalación.
 
 ## Ejecución
+```bash
 python main.py
-
+```
 --- 
 
 ## Decisiones de diseño
@@ -208,26 +210,26 @@ python main.py
 
 ### 5. Aplicación de configuración (flujo normal)
 
-#### Paso 1
+#### Parte 1
 <img src="screenshots/apply_config_1.png" width="700">
 
-#### Paso 2
+#### Parte 2
 <img src="screenshots/apply_config_2.png" width="700">
 
-#### Paso 3
+#### Parte 3
 <img src="screenshots/apply_config_3.png" width="700">
 
 ---
 
 ### 6. Aplicación con conflictos (confirmación del usuario)
 
-#### Paso 1
+#### Parte 1
 <img src="screenshots/apply_config_conflict_1.png" width="700">
 
-#### Paso 2
+#### Parte 2
 <img src="screenshots/apply_config_conflict_2.png" width="700">
 
-#### Paso 3
+#### Parte 3
 <img src="screenshots/apply_config_conflict_3.png" width="700">
 
 ---

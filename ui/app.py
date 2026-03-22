@@ -135,6 +135,7 @@ class AutomationApp:
 
                 if not continue_apply:
                     self.output_text.insert(tk.END, "\nApply operation cancelled by user due to VLAN conflicts.\n")
+                    logger.info(f"Apply operation cancelled by user due to VLAN conflicts.")
                     connection.disconnect()
                     return
 
@@ -374,15 +375,15 @@ class AutomationApp:
         conflicts = get_vlan_conflicts(self.current_vlans,desired_vlans)
 
         if conflicts:
-            conflict_message = "The following VLAN conflicts were detected:\n\n"
-            conflict_message += "\n".join(conflicts)
-            conflict_message += "\n\nDo you want to continue and include these conflicting VLAN renames in the preview?"
+            #conflict_message = "The following VLAN conflicts were detected:\n\n"
+            #conflict_message += "\n".join(conflicts)
+            #conflict_message += "\n\nDo you want to continue and include these conflicting VLAN renames in the preview?"
             logger.warning(f"Config_Preview : VLAN conflicts detected: {conflicts}")
-            continue_preview = messagebox.askyesno("VLAN Conflicts Detected", conflict_message)
+            #continue_preview = messagebox.askyesno("VLAN Conflicts Detected", conflict_message)
 
-            if not continue_preview:
-                self.output_text.insert(tk.END, "Preview cancelled by user due to VLAN conflicts.")
-                return
+            #if not continue_preview:
+            #    self.output_text.insert(tk.END, "Preview cancelled by user due to VLAN conflicts.")
+            #    return
 
             force_conflicts = True
 
@@ -428,10 +429,10 @@ class AutomationApp:
                             preview_lines.append(
                                 f"- VLAN {vlan_id}: conflict detected, rename will be included ('{current_name}' -> '{desired_name}')"
                             )
-                        else:
-                            preview_lines.append(
-                                f"- VLAN {vlan_id}: CONFLICT - exists as '{current_name}', desired '{desired_name}'"
-                            )
+                        #else:
+                        #    preview_lines.append(
+                        #        f"- VLAN {vlan_id}: CONFLICT - exists as '{current_name}', desired '{desired_name}'"
+                        #   )
 
             preview_lines.append("")
 

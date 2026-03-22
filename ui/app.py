@@ -11,6 +11,7 @@ from services.config_service import (
     validate_post_change,
     extract_relevant_changes,
 )
+from services.file_service import save_backup, save_text_file, generate_diff
 
 class AutomationApp:
     def __init__(self):
@@ -144,8 +145,8 @@ class AutomationApp:
                 force_conflicts = True
             # Save pre-change backup
             pre_hostname_label = self.current_hostname if self.current_hostname else "unknown_switch"
-            pre_run_file = self.save_backup("backups/prechange", pre_hostname_label, "running-config", running_config_output)
-            pre_vlan_file = self.save_backup("backups/prechange", pre_hostname_label, "show-vlan", vlan_output)
+            pre_run_file = save_backup("backups/prechange", pre_hostname_label, "running-config", running_config_output)
+            pre_vlan_file = save_backup("backups/prechange", pre_hostname_label, "show-vlan", vlan_output)
 
             #self.output_text.insert(tk.END, f"Pre-change backup saved:\n- {pre_run_file}\n- {pre_vlan_file}\n")
             self.output_text.insert(tk.END, f"\nPre-change backup completed.\n")
@@ -207,19 +208,19 @@ class AutomationApp:
 
             # Save post-change backup
             post_hostname_label = self.current_hostname if self.current_hostname else desired_hostname
-            post_run_file = self.save_backup("backups/postchange", post_hostname_label, "running-config", post_running_config_output)
-            post_vlan_file = self.save_backup("backups/postchange", post_hostname_label, "show-vlan", post_vlan_output)
+            post_run_file = save_backup("backups/postchange", post_hostname_label, "running-config", post_running_config_output)
+            post_vlan_file = save_backup("backups/postchange", post_hostname_label, "show-vlan", post_vlan_output)
             self.output_text.insert(tk.END, "Post-change backup completed.\n\n")
             self.output_text.insert(tk.END, "Execution completed.\n\n")
             ## diff
-            running_diff = self.generate_diff(
+            running_diff = generate_diff(
                 running_config_output,
                 post_running_config_output,
                 from_name="running-config-pre",
                 to_name="running-config-post"
             )
 
-            vlan_diff = self.generate_diff(
+            vlan_diff = generate_diff(
                 vlan_output,
                 post_vlan_output,
                 from_name="show-vlan-pre",
@@ -229,7 +230,7 @@ class AutomationApp:
             
 
             relevant_changes = extract_relevant_changes(running_diff)
-            diff_run_file = self.save_text_file(
+            diff_run_file = save_text_file(
                 "backups/diff",
                 post_hostname_label,
                 "running-config-diff",
@@ -237,7 +238,7 @@ class AutomationApp:
                 extension="diff"
             )
 
-            diff_vlan_file = self.save_text_file(
+            diff_vlan_file = save_text_file(
                 "backups/diff",
                 post_hostname_label,
                 "show-vlan-diff",
@@ -375,7 +376,7 @@ class AutomationApp:
                 return
 
         force_conflicts = False
-        conflicts = self.get_vlan_conflicts(desired_vlans)
+        conflicts = get_vlan_conflicts(self.current_vlans,desired_vlans)
 
         if conflicts:
             conflict_message = "The following VLAN conflicts were detected:\n\n"
@@ -390,11 +391,12 @@ class AutomationApp:
 
             force_conflicts = True
 
-        commands, detected_conflicts = self.build_config_commands(
-            desired_hostname,
-            desired_vlans,
-            force_conflicts=force_conflicts
-        )
+        commands, detected_conflicts = build_config_commands(self.current_hostname,
+                                                             self.current_vlans,
+                                                             desired_hostname,
+                                                             desired_vlans,
+                                                             force_conflicts=force_conflicts
+                                                        )
 
         preview_lines = [
             "=== Configuration Preview ===",

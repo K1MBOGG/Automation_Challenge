@@ -85,16 +85,7 @@ class AutomationApp:
     def apply_config(self):
         self.output_text.delete("1.0", tk.END)
 
-        ip = self.ip_entry.get()
-        username = self.username_entry.get()
-        password = self.password_entry.get()
-        hostname = self.hostname_entry.get()
-
-        vlan_entries_data = []
-        for vlan_id_entry, vlan_name_entry in self.vlan_entries:
-                vlan_entries_data.append(
-                    (vlan_id_entry.get(), vlan_name_entry.get())
-                )
+        ip, username, password, hostname, vlan_entries_data = self.collect_inputs()
 
         valid, result = validate_inputs(
                                         ip,
@@ -188,7 +179,7 @@ class AutomationApp:
             # Save config
             self.output_text.insert(tk.END, "\nSaving configuration...\n")
             self.root.update()
-            save_result = connection.save_config()
+            connection.save_config()
 
             #self.output_text.insert(tk.END, f"{save_result}\n")
             self.root.update()
@@ -326,16 +317,7 @@ class AutomationApp:
     def preview_config(self):
         self.output_text.delete("1.0", tk.END)
 
-        ip = self.ip_entry.get()
-        username = self.username_entry.get()
-        password = self.password_entry.get()
-        hostname = self.hostname_entry.get()
-
-        vlan_entries_data = []
-        for vlan_id_entry, vlan_name_entry in self.vlan_entries:
-            vlan_entries_data.append(
-                (vlan_id_entry.get(), vlan_name_entry.get())
-            )
+        ip, username, password, hostname, vlan_entries_data = self.collect_inputs()
 
         valid, result = validate_inputs(
                                             ip,
@@ -352,28 +334,29 @@ class AutomationApp:
         desired_hostname = result["hostname"]
         desired_vlans = result["vlans"]
 
-        # Si todavía no se leyó el switch, hacerlo automáticamente
-        if self.current_hostname is None and not self.current_vlans:
-            self.output_text.insert(tk.END, "Reading current config...\n\n")
+        # Leer siempre config del switch por si hubo cambio de ip
+        
+        self.output_text.insert(tk.END, "Reading current config...\n\n")
+        self.root.update()
+        fetch_switch_state(ip,username,password)
+
+        try:
+            hostname_output, vlan_output = fetch_switch_state(ip, username, password)
+
+            self.current_hostname = parse_hostname(hostname_output)
+            self.current_vlans = parse_vlan_brief(vlan_output)
+
+            self.output_text.insert(tk.END, "Switch config loaded.\n\n")
             self.root.update()
-
-            try:
-                hostname_output, vlan_output = fetch_switch_state(ip, username, password)
-
-                self.current_hostname = parse_hostname(hostname_output)
-                self.current_vlans = parse_vlan_brief(vlan_output)
-
-                self.output_text.insert(tk.END, "Switch config loaded.\n\n")
-                self.root.update()
-            except NetmikoAuthenticationException:
-                self.output_text.insert(tk.END, "Authentication failed.\n")
-                return
-            except NetmikoTimeoutException:
-                self.output_text.insert(tk.END, "Connection timeout.\n")
-                return
-            except Exception as e:
-                self.output_text.insert(tk.END, f"Error: {str(e)}\n")
-                return
+        except NetmikoAuthenticationException:
+            self.output_text.insert(tk.END, "Authentication failed.\n")
+            return
+        except NetmikoTimeoutException:
+            self.output_text.insert(tk.END, "Connection timeout.\n")
+            return
+        except Exception as e:
+            self.output_text.insert(tk.END, f"Error: {str(e)}\n")
+            return
 
         force_conflicts = False
         conflicts = get_vlan_conflicts(self.current_vlans,desired_vlans)
@@ -521,5 +504,18 @@ class AutomationApp:
                 vlan_list.append((int(vlan_id), vlan_name))
 
         return vlan_list
+    def collect_inputs(self):
+        ip = self.ip_entry.get()
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        hostname = self.hostname_entry.get()
+
+        vlan_entries_data = []
+        for vlan_id_entry, vlan_name_entry in self.vlan_entries:
+            vlan_entries_data.append(
+                (vlan_id_entry.get(), vlan_name_entry.get())
+            )
+
+        return ip, username, password, hostname, vlan_entries_data
     def run(self):
         self.root.mainloop()

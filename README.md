@@ -110,7 +110,7 @@ Después de aplicar cambios, la herramienta verifica:
 - Que el hostname coincida con el esperado
 - Que las VLANs existan y tengan el nombre correcto
 
-Si hay desviaciones, se muestran claramente en el output.
+Si la validación falla, se muestra el output del device y se registra en el archivo log.
 
 ---
 
@@ -234,5 +234,15 @@ python main.py
 
 ---
 
-### 7. Verificación post cambio
+### 7. Validación post cambio - OK
 <img src="screenshots/read_config_post_apply.png" width="700">
+
+---
+
+### 7. Validacion post cambio - FAILED
+
+#### Parte 1
+<img src="screenshots/apply_config_validation_failed_1.png" width="700">
+
+#### Parte 2
+<img src="screenshots/apply_config_validation_failed_2.png" width="700">

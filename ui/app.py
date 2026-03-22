@@ -276,14 +276,14 @@ class AutomationApp:
                 summary_lines.append("\nApplied commands: none")
 
             if detected_conflicts:
-                if force_conflicts:
-                    summary_lines.append("\nConflicts:\n VLAN 30 renamed from '30' to 'treinta' (user approved")
-                else:
-                    summary_lines.append("\nConflicts detected:")
+                summary_lines.append("\nConflicts:")
                 for item in detected_conflicts:
-                    summary_lines.append(f"  - {item}")
+                    if force_conflicts:
+                        summary_lines.append(f"  ✔ {item} (user approved)")
+                    else:
+                        summary_lines.append(f"  - {item}")
             else:
-                summary_lines.append("\nConflicts detected: none")
+                summary_lines.append("\nConflicts: none")
 
             summary_lines.append("\n=== Validation Results ===\n")
             for item in validation_results:

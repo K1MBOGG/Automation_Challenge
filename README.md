@@ -30,8 +30,9 @@ La herramienta soporta:
 
 ## Arquitectura
 
-La aplicación está organizada en módulos para separar responsabilidades, además de favorecer la mantenabilidad , organizacion y claridad del codigo:
+La aplicación está organizada en módulos para separar responsabilidades, además de favorecer la mantenibilidad , organizacion y claridad del codigo:
 
+```text
 project/
 │
 ├── ui/
@@ -52,7 +53,7 @@ project/
 │
 ├── requirements.txt
 └── README.md
-
+```
 
 ---
 
@@ -153,32 +154,83 @@ Instalar dependencias:
 
 ```bash
 pip install -r requirements.txt
+```
+--- 
 
-Dependencias
+## Dependencias
+
 netmiko
 
 Nota: También se utilizan librerías estándar de Python (logging, difflib, os, datetime), que no requieren instalación.
 
-Ejecución
+## Ejecución
 python main.py
-Capturas de pantalla
-Interfaz principal
-<img src="screenshots/ui_main.png" width="700">
-Preview de configuración
-<img src="screenshots/preview.png" width="700">
-Aplicación de cambios
-<img src="screenshots/apply_success.png" width="700">
-Resumen de ejecución
-<img src="screenshots/summary.png" width="700">
-Decisiones de diseño
-Separación de responsabilidades (UI, services, utils)
-Operaciones sin estado (Preview y Apply siempre consultan el estado actual)
-Manejo de conflictos con confirmación del usuario
-Backups antes y después de cambios
-Logging simple para trazabilidad
-Mejoras futuras
-Logging más avanzado (niveles, estructura)
-Soporte para más tipos de configuración
-Ejecución sobre múltiples dispositivos
-Versión CLI
-Tests unitarios
+
+--- 
+
+## Decisiones de diseño
+
+- Separación de responsabilidades (UI, services, utils)
+- Operaciones sin estado (Preview y Apply siempre consultan el estado actual)
+- Manejo de conflictos con confirmación del usuario
+- Backups antes y después de cambios
+- Logging simple para trazabilidad
+  
+  Mejoras futuras:
+
+- Logging más avanzado (niveles, estructura)
+- Soporte para más tipos de configuración
+- Ejecución sobre múltiples dispositivos
+
+--- 
+
+## Capturas de pantalla
+
+### 1. Menú principal
+<img src="screenshots/main_menu.png" width="700">
+
+---
+
+### 2. Lectura de configuración actual
+<img src="screenshots/read_config.png" width="700">
+
+---
+
+### 3. Preview de configuración
+<img src="screenshots/preview_config.png" width="700">
+
+---
+
+### 4. Preview con conflictos detectados
+<img src="screenshots/preview_config_conflicts.png" width="700">
+
+---
+
+### 5. Aplicación de configuración (flujo normal)
+
+#### Paso 1
+<img src="screenshots/apply_config_1.png" width="700">
+
+#### Paso 2
+<img src="screenshots/apply_config_2.png" width="700">
+
+#### Paso 3
+<img src="screenshots/apply_config_3.png" width="700">
+
+---
+
+### 6. Aplicación con conflictos (confirmación del usuario)
+
+#### Paso 1
+<img src="screenshots/apply_config_conflict_1.png" width="700">
+
+#### Paso 2
+<img src="screenshots/apply_config_conflict_2.png" width="700">
+
+#### Paso 3
+<img src="screenshots/apply_config_conflict_3.png" width="700">
+
+---
+
+### 7. Verificación post cambio
+<img src="screenshots/read_config_post_apply.png" width="700">

@@ -1,0 +1,62 @@
+2026-03-23 01:23:24,101 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:23:25,080 [INFO] Authentication (password) successful!
+2026-03-23 01:24:09,690 [INFO] Reading current config...ip : 10.54.108.11
+2026-03-23 01:24:09,748 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:24:10,558 [INFO] Authentication (password) successful!
+2026-03-23 01:24:13,863 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:24:14,629 [INFO] Authentication (password) successful!
+2026-03-23 01:24:21,743 [INFO] Apply started for 10.54.108.11
+2026-03-23 01:24:21,840 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:24:22,846 [INFO] Authentication (password) successful!
+2026-03-23 01:24:27,988 [INFO] Pre-change backup completed.
+2026-03-23 01:24:28,040 [INFO] Commands to apply: ['hostname LAB_SWITCH_1', 'vlan 10', ' name VLAN_DATOS', 'vlan 20', ' name VLAN_VOZ', 'vlan 30', ' name VLAN_SEGURIDAD']
+2026-03-23 01:24:31,981 [INFO] Configuration applied successfully
+2026-03-23 01:24:36,530 [INFO] Pchange backup completed.
+2026-03-23 01:24:36,530 [INFO] Post-change backup completed
+2026-03-23 01:24:36,530 [INFO] Execution completed
+2026-03-23 01:24:45,148 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:24:45,887 [INFO] Authentication (password) successful!
+2026-03-23 01:25:15,924 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:25:16,456 [INFO] Authentication (password) successful!
+2026-03-23 01:25:25,227 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:25:25,940 [INFO] Authentication (password) successful!
+2026-03-23 01:25:44,963 [INFO] Reading current config...ip : 10.54.108.11
+2026-03-23 01:25:45,008 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:25:46,102 [INFO] Authentication (password) successful!
+2026-03-23 01:25:49,384 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:25:50,097 [INFO] Authentication (password) successful!
+2026-03-23 01:25:53,393 [WARNING] Config_Preview : VLAN conflicts detected: ["VLAN 30: current='VLAN_SEGURIDAD', desired='VLAN'"]
+2026-03-23 01:26:04,968 [INFO] Apply started for 10.54.108.11
+2026-03-23 01:26:05,051 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:26:05,976 [INFO] Authentication (password) successful!
+2026-03-23 01:26:11,157 [WARNING] VLAN conflicts detected: ["VLAN 30: current='VLAN_SEGURIDAD', desired='VLAN'"]
+2026-03-23 01:26:12,928 [INFO] Pre-change backup completed.
+2026-03-23 01:26:12,970 [INFO] Commands to apply: ['vlan 30', ' name VLAN']
+2026-03-23 01:26:16,215 [INFO] Configuration applied successfully
+2026-03-23 01:26:20,813 [INFO] Pchange backup completed.
+2026-03-23 01:26:20,813 [INFO] Post-change backup completed
+2026-03-23 01:26:20,813 [INFO] Execution completed
+2026-03-23 01:26:35,172 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:26:35,971 [INFO] Authentication (password) successful!
+2026-03-23 01:26:54,008 [INFO] Apply started for 10.54.108.11
+2026-03-23 01:26:54,110 [INFO] Connected (version 2.0, client Cisco-1.25)
+2026-03-23 01:26:54,813 [INFO] Authentication (password) successful!
+2026-03-23 01:26:59,955 [WARNING] VLAN conflicts detected: ["VLAN 30: current='VLAN', desired='VLAN_VOZ'"]
+2026-03-23 01:27:01,836 [INFO] Pre-change backup completed.
+2026-03-23 01:27:01,871 [INFO] Commands to apply: ['hostname 300', 'vlan 30', ' name VLAN_VOZ']
+2026-03-23 01:27:05,141 [INFO] Configuration applied successfully
+2026-03-23 01:27:09,651 [INFO] Pchange backup completed.
+2026-03-23 01:27:09,652 [INFO] Post-change backup completed
+2026-03-23 01:27:09,652 [INFO] Execution completed
+2026-03-23 01:27:09,655 [WARNING] Post-change validation detected warnings/errors.
+2026-03-23 01:27:09,655 [WARNING] Device response after apply:
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+LAB_SWITCH_1(config)#hostname 300
+% Hostname contains one or more illegal characters. 
+
+LAB_SWITCH_1(config)#vlan 30
+LAB_SWITCH_1(config-vlan)# name VLAN_VOZ
+VLAN #30 and #20 have an identical name: VLAN_VOZ
+LAB_SWITCH_1(config-vlan)#end
+LAB_SWITCH_1#

@@ -1,0 +1,39 @@
+--- running-config-pre
++++ running-config-post
+@@ -1,8 +1,8 @@
+ Building configuration...
+ 
+-Current configuration : 23439 bytes
+-!
+-! Last configuration change at 04:37:00 UTC Mon Mar 23 2026 by admin
++Current configuration : 23526 bytes
++!
++! Last configuration change at 04:38:38 UTC Mon Mar 23 2026 by admin
+ !
+ version 16.12
+ no service pad
+@@ -13,7 +13,7 @@
+ platform punt-keepalive disable-kernel-core
+ platform management port rate-limt-disabled
+ !
+-hostname LAB_BCP1
++hostname LAB_SWITCH_1
+ !
+ !
+ vrf definition Mgmt-vrf
+@@ -243,6 +243,15 @@
+ transceiver type all
+  monitoring
+ !
++!
++vlan 10
++ name VLAN_DATOS
++!
++vlan 20
++ name VLAN_VOZ
++!
++vlan 30
++ name VLAN_SEGURIDAD
+ !
+ vlan 3006
+  name 3006

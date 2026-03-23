@@ -1,0 +1,23 @@
+--- running-config-pre
++++ running-config-post
+@@ -1,8 +1,8 @@
+ Building configuration...
+ 
+-Current configuration : 23526 bytes
+-!
+-! Last configuration change at 04:38:38 UTC Mon Mar 23 2026 by admin
++Current configuration : 23516 bytes
++!
++! Last configuration change at 04:40:23 UTC Mon Mar 23 2026 by admin
+ !
+ version 16.12
+ no service pad
+@@ -251,7 +251,7 @@
+  name VLAN_VOZ
+ !
+ vlan 30
+- name VLAN_SEGURIDAD
++ name VLAN
+ !
+ vlan 3006
+  name 3006
